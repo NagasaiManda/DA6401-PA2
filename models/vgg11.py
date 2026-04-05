@@ -53,7 +53,12 @@ class VGG11Encoder(nn.Module):
             nn.BatchNorm2d(512),
             nn.ReLU(inplace=True),
         )
-        self.maxpool = nn.MaxPool2d(kernel_size=2, stride=2)
+        self.maxpool1 = nn.MaxPool2d(kernel_size=2, stride=2)
+        self.maxpool2 = nn.MaxPool2d(kernel_size=2, stride=2)
+        self.maxpool3 = nn.MaxPool2d(kernel_size=2, stride=2)
+        self.maxpool4 = nn.MaxPool2d(kernel_size=2, stride=2)
+        self.maxpool5 = nn.MaxPool2d(kernel_size=2, stride=2)
+
         # self.fc1 = nn.Linear(512*7*7, 4096) # Final feature map size is 512x7x7 after 5 maxpools
         # self.fc2 = nn.Linear(4096, 4096)
         # self.fc3 = nn.Linear(4096, 1000)
@@ -75,19 +80,19 @@ class VGG11Encoder(nn.Module):
         x = self.conv1(x)
         features['conv1'] = x
     
-        x = self.maxpool(x)
+        x = self.maxpool1(x)
         x = self.conv2(x)
         features['conv2'] = x
-        x = self.maxpool(x)
+        x = self.maxpool2(x)
         x = self.conv3(x)
         features['conv3'] = x
-        x = self.maxpool(x)
+        x = self.maxpool3(x)
         x = self.conv4(x)
         features['conv4'] = x
-        x = self.maxpool(x)
+        x = self.maxpool4(x)
         x = self.conv5(x)
         features['conv5'] = x
-        x = self.maxpool(x)
+        x = self.maxpool5(x)
         x = torch.flatten(x, 1) 
         # x = F.relu(self.fc1(x))
         # x = self.dropout(x)
