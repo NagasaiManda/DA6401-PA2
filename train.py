@@ -8,7 +8,7 @@ import torch
 from models import VGG11Classifier
 from models import CustomDropout
 from torch import optim
-from data.pets_data import OxfordIIITPetRawDataset
+from data.pets_data import OxfordIIITPetLazyDataset
 from torch.utils.data import DataLoader
 from torch import nn
 from models import VGG11Localizer
@@ -91,8 +91,8 @@ def evaluate_localizer(model, dataloader, criterion):
 
 def train_classifier(num_epochs,continue_train=False):
     print("Loading datasets...")
-    train_dataset = OxfordIIITPetRawDataset(root_dir="../dataset/", mode="train")
-    val_dataset = OxfordIIITPetRawDataset(root_dir="../dataset/", mode="val")
+    train_dataset = OxfordIIITPetLazyDataset(root_dir="../dataset/", mode="train")
+    val_dataset = OxfordIIITPetLazyDataset(root_dir="../dataset/", mode="val")
     train_loader = DataLoader(train_dataset, batch_size=128, shuffle=True, num_workers=4, persistent_workers=True)
     val_loader = DataLoader(val_dataset, batch_size=128, shuffle=False, num_workers=4, persistent_workers=True)
     print("Datasets loaded.")
@@ -149,12 +149,12 @@ def train_classifier(num_epochs,continue_train=False):
 
 def train_localizer(num_epochs,continue_train=False):
     print("Loading datasets...")
-    train_dataset = OxfordIIITPetRawDataset(root_dir="../dataset/", mode="train")
-    val_dataset = OxfordIIITPetRawDataset(root_dir="../dataset/", mode="val")
+    train_dataset = OxfordIIITPetLazyDataset(root_dir="../dataset/", mode="train")
+    val_dataset = OxfordIIITPetLazyDataset(root_dir="../dataset/", mode="val")
     train_loader = DataLoader(train_dataset, batch_size=128, shuffle=True, num_workers=4, persistent_workers=True)
     val_loader = DataLoader(val_dataset, batch_size=128, shuffle=False, num_workers=4, persistent_workers=True)
     print("Datasets loaded.")
-    model = VGG11Localizer(num_classes=37)
+    model = VGG11Localizer()
     best_model_path = "best_model_localizer.pt"
     if continue_train:
         model.load_state_dict(torch.load(best_model_path))

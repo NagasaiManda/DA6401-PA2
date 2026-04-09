@@ -93,7 +93,7 @@ class VGG11Encoder(nn.Module):
         x = self.conv5(x)
         features['conv5'] = x
         x = self.maxpool5(x)
-        x = torch.flatten(x, 1) 
+        # x = torch.flatten(x, 1) 
         # x = F.relu(self.fc1(x))
         # x = self.dropout(x)
         # x = F.relu(self.fc2(x))
