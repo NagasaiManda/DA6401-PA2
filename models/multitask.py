@@ -6,6 +6,7 @@ import torch.nn as nn
 from .classification import VGG11Classifier
 from .localization import VGG11Localizer
 from .segmentation import VGG11UNet
+import numpy as np
 import gdown
 
 class MultiTaskPerceptionModel(nn.Module):
@@ -52,10 +53,10 @@ class MultiTaskPerceptionModel(nn.Module):
         """
         x, features = self.backbone(x, return_features=True)
         class_logits = self.classifier_ff(torch.flatten(x, 1)) 
-        loc_preds = self.localizer_ff(torch.flatten(x, 1)) 
-        seg_logits = self.segmentation_ff(x, features) 
+        # loc_preds = self.localizer_ff(torch.flatten(x, 1)) 
+        # seg_logits = self.segmentation_ff(x, features) 
         return {
             'classification': class_logits,
-            'localization': loc_preds,
-            'segmentation': seg_logits
+            'localization': np.random((10, 4)),  # Placeholder, replace with loc_preds
+            'segmentation': np.random((10, 37, 224, 224))  # Placeholder, replace with seg_logits
         }
