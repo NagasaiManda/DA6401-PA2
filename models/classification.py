@@ -20,11 +20,9 @@ class VGG11Classifier(nn.Module):
         """
         super().__init__()
         self.VGG11enc = VGG11Encoder(in_channels) 
-        self.fc1 = nn.Linear(512, 256)
+        self.fc1 = nn.Linear(512*7*7, 512)
         self.dropout = CustomDropout(dropout_p)
-        self.fc2 = nn.Linear(256, num_classes) 
-        self.global_pool = nn.AdaptiveAvgPool2d((1, 1))
-        
+        self.fc2 = nn.Linear(512, num_classes) 
 
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -35,7 +33,6 @@ class VGG11Classifier(nn.Module):
             Classification logits [B, num_classes].
         """
         x = self.VGG11enc(x)
-        x = self.global_pool(x)
         x = torch.flatten(x,1)
         x = self.fc1(x)
         x = self.dropout(x)
