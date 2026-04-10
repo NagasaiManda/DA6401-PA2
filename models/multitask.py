@@ -53,10 +53,10 @@ class MultiTaskPerceptionModel(nn.Module):
         """
         x, features = self.backbone(x, return_features=True)
         class_logits = self.classifier_ff(torch.flatten(x, 1)) 
-        # loc_preds = self.localizer_ff(torch.flatten(x, 1)) 
-        # seg_logits = self.segmentation_ff(x, features) 
+        loc_preds = self.localizer_ff(torch.flatten(x, 1)) 
+        seg_logits = self.segmentation_ff(x, features) 
         return {
             'classification': class_logits,
-            'localization': np.random((10, 4)),  # Placeholder, replace with loc_preds
-            'segmentation': np.random((10, 37, 224, 224))  # Placeholder, replace with seg_logits
+            'localization': loc_preds,
+            'segmentation': seg_logits
         }
