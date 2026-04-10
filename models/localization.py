@@ -22,12 +22,11 @@ class VGG11Localizer(nn.Module):
         self.droupout = CustomDropout(dropout_p)
         self.out_fc = nn.Sequential(
 
-            nn.Linear(512, 256),
+            nn.Linear(512 * 7 * 7, 256),
             nn.ReLU(),
             self.droupout,
             nn.Linear(256, 4)  
         )
-        self.global_pool = nn.AdaptiveAvgPool2d((1, 1))
 
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -40,7 +39,6 @@ class VGG11Localizer(nn.Module):
         """
         # TODO: Implement forward pass.
         x = self.vgg11_enc(x)
-        x = self.global_pool(x)
         x = torch.flatten(x,1)
         x = self.out_fc(x)
         return x
