@@ -26,11 +26,11 @@ class VGG11Localizer(nn.Module):
         self.droupout_2 = CustomDropout(dropout_p)
         self.out_fc = nn.Sequential(
 
-            nn.Linear(512 * 7 * 7, 512),
-            nn.BatchNorm1d(512),
+            nn.Linear(512 * 7 * 7, 2048),
+            nn.BatchNorm1d(2048),
             nn.ReLU(),
             self.droupout_1,
-            nn.Linear(512, 256),
+            nn.Linear(2048, 256),
             nn.BatchNorm1d(256),
             nn.ReLU(),
             self.droupout_2, 
