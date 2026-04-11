@@ -27,23 +27,24 @@ class OxfordIIITPetLazyDataset(Dataset):
 
         # Define the augmentation pipeline
         if self.mode == "train":
-            self.transform = v2.Compose([
-                v2.ToImage(),                            # Convert to tensor-based image
-                v2.RandomHorizontalFlip(p=0.5),
-                v2.RandomVerticalFlip(p=0.2),
-                v2.RandomRotation(degrees=15),
-                # RandomResizedCrop handles the "output is always 224x224" requirement
-                v2.RandomResizedCrop(size=self.image_size, scale=(0.8, 1.0), antialias=True),
-                v2.ColorJitter(brightness=0.3, contrast=0.2),
-                v2.GaussianNoise(mean=0, sigma=0.05),    # Add random noise
-                v2.ToDtype(torch.float32, scale=True),   # Scale to [0, 1]
-            ])
+           self.transform = v2.Compose([
+            v2.ToImage(),
+            v2.RandomHorizontalFlip(p=0.5),
+            v2.RandomResizedCrop(size=self.image_size, scale=(0.85, 1.0), antialias=True),
+            v2.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.1, hue=0.02),
+            v2.ToDtype(torch.float32, scale=True),
+            v2.Normalize(mean=[0.485, 0.456, 0.406],
+                         std=[0.229, 0.224, 0.225]),
+        ])
+
         else:
             # For Val/Test: Just resize and normalize
             self.transform = v2.Compose([
                 v2.ToImage(),
                 v2.Resize(self.image_size, antialias=True),
                 v2.ToDtype(torch.float32, scale=True),
+                v2.Normalize(mean=[0.485, 0.456, 0.406],
+                 std=[0.229, 0.224, 0.225]),
             ])
 
     def _mask_path(self, image_id: str):
@@ -99,37 +100,40 @@ class OxfordIIITPetLazyDataset(Dataset):
 
     def __getitem__(self, idx):
         sample = self.samples[idx]
-
-        # 1. Load raw data
+    
         image = Image.open(sample["image_path"]).convert("RGB")
         mask = Image.open(sample["mask_path"])
         orig_w, orig_h = image.size
         
-        # 2. Wrap targets in Torchvision V2 Tensors
-        # This is the "magic" that allows transforms to update Bboxes and Masks
         img_tv = tv_tensors.Image(image)
         mask_tv = tv_tensors.Mask(mask)
         
         bbox_raw = self._load_bbox(sample["xml_path"], orig_w, orig_h)
-        # Format is [xmin, ymin, xmax, ymax] (XYXY)
         boxes_tv = tv_tensors.BoundingBoxes(
             [bbox_raw], 
             format="XYXY", 
             canvas_size=(orig_h, orig_w)
         )
-
-        # 3. Apply the transform pipeline to all simultaneously
-        # Note: Bbox scaling, rotation, and cropping are handled automatically here
+    
         img_tv, mask_tv, boxes_tv = self.transform(img_tv, mask_tv, boxes_tv)
-
-        # 4. Final Formatting
-        # Convert mask to long for CrossEntropy and squeeze out channel dim
+    
         mask_tv = mask_tv.to(torch.long).squeeze(0)
+        mask_tv = mask_tv - 1
         label = torch.tensor(sample["label"], dtype=torch.long)
-
+    
+        bbox = boxes_tv.squeeze(0)  # (4,)
+        xmin, ymin, xmax, ymax = bbox
+    
+        cx = (xmin + xmax) / 2.0
+        cy = (ymin + ymax) / 2.0
+        w  = xmax - xmin
+        h  = ymax - ymin
+    
+        bbox_cxcywh = torch.stack([cx, cy, w, h]).to(torch.float32)
+    
         return {
             "image": img_tv,
             "mask": mask_tv,
             "label": label,
-            "bbox": boxes_tv.squeeze(0)
+            "bbox": bbox_cxcywh,  # ✅ now (cx, cy, w, h)
         }
