@@ -5,6 +5,7 @@ import torch
 import torch.nn as nn
 from .vgg11 import VGG11Encoder
 from .layers import CustomDropout
+import torch.nn.functional as F
 
 
 class VGG11Classifier(nn.Module):
@@ -20,9 +21,13 @@ class VGG11Classifier(nn.Module):
         """
         super().__init__()
         self.VGG11enc = VGG11Encoder(in_channels) 
-        self.fc1 = nn.Linear(512*7*7, 512)
-        self.dropout = CustomDropout(dropout_p)
-        self.fc2 = nn.Linear(512, num_classes) 
+        self.fc1 = nn.Linear(512*7*7, 4096)
+        self.bn1 = nn.BatchNorm1d(4096)
+        self.dropout_1 = CustomDropout(dropout_p)
+        self.fc2 = nn.Linear(4096, 4096)
+        self.bn2 = nn.BatchNorm1d(4096)
+        self.dropout_2= CustomDropout(dropout_p)
+        self.fc3 = nn.Linear(4096, num_classes) 
 
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -35,6 +40,12 @@ class VGG11Classifier(nn.Module):
         x = self.VGG11enc(x)
         x = torch.flatten(x,1)
         x = self.fc1(x)
-        x = self.dropout(x)
+        x = self.bn1(x)
+        x = F.relu(x)
+        x = self.dropout_1(x)
         x = self.fc2(x)
+        x = self.bn2(x)
+        x = F.relu(x)
+        x = self.dropout_2(x)
+        x = self.fc3(x)
         return x
