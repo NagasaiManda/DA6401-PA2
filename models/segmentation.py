@@ -14,7 +14,7 @@ from .layers import CustomDropout
 
 
 class Decoder(nn.Module):
-    def __init__(self, in_channels=512, out_channels=37):
+    def __init__(self, in_channels=512, out_channels=3):
         super().__init__()
 
         self.upsample0 = nn.ConvTranspose2d(512, 512, kernel_size=2, stride=2)

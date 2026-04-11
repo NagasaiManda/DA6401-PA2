@@ -12,7 +12,7 @@ import gdown
 class MultiTaskPerceptionModel(nn.Module):
     """Shared-backbone multi-task model."""
 
-    def __init__(self, num_breeds: int = 37, seg_classes: int = 37, in_channels: int = 3, classifier_path: str = "classifier.pth", localizer_path: str = "localizer.pth", unet_path: str = "unet.pth"):
+    def __init__(self, num_breeds: int = 37, seg_classes: int = 3, in_channels: int = 3, classifier_path: str = "classifier.pth", localizer_path: str = "localizer.pth", unet_path: str = "unet.pth"):
         """
         Initialize the shared backbone/heads using these trained weights.
         Args:
