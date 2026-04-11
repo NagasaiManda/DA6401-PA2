@@ -37,7 +37,9 @@ class MultiTaskPerceptionModel(nn.Module):
         self.localizer.load_state_dict(localizer_state)
         self.segmentation.load_state_dict(unet_state)
         self.backbone = self.classifier.VGG11enc
-        self.classifier_ff = nn.Sequential(self.classifier.fc1, self.classifier.dropout, self.classifier.fc2)
+        self.classifier_ff = nn.Sequential(self.classifier.fc1,self.classifier.bn1, nn.ReLU(), self.classifier.dropout_1,
+                                           self.classifier.fc2,self.classifier.bn2, nn.ReLU(), self.classifier.dropout_2,
+                                             self.classifier.fc3)
         self.localizer_ff = self.localizer.out_fc
         self.segmentation_ff = self.segmentation.decoder
 
