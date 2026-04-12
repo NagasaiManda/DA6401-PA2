@@ -2,6 +2,7 @@ import torch
 import torch.nn.functional as F
 import torch.nn as nn
 
+# Dice loss for segmentation
 class DiceLoss(nn.Module):
     def __init__(self, eps=1e-6):
         super().__init__()
@@ -23,8 +24,9 @@ class DiceLoss(nn.Module):
         return 1 - dice.mean()
 
 
+# Combined loos with dice loss and cross entropy
 class CEDiceLoss(nn.Module):
-    def __init__(self, ce_weight=0.5, dice_weight=0.5):
+    def __init__(self, ce_weight=0.2, dice_weight=0.8):
         super().__init__()
         self.ce = nn.CrossEntropyLoss()
         self.dice = DiceLoss()

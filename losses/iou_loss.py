@@ -29,13 +29,12 @@ class IoULoss(nn.Module):
         pred_boxes, target_boxes: [B, 4] in (cx, cy, w, h)
         """
 
-        # --- 🔒 Ensure valid widths/heights ---
+        # Ensure valid widths/heights
         pred_w = pred_boxes[:, 2].clamp(min=1e-6)
         pred_h = pred_boxes[:, 3].clamp(min=1e-6)
         tgt_w  = target_boxes[:, 2].clamp(min=1e-6)
         tgt_h  = target_boxes[:, 3].clamp(min=1e-6)
         
-        # --- Convert CXCYWH → XYXY ---
         pred_x1 = pred_boxes[:, 0] - pred_w / 2
         pred_y1 = pred_boxes[:, 1] - pred_h / 2
         pred_x2 = pred_boxes[:, 0] + pred_w / 2
@@ -46,7 +45,7 @@ class IoULoss(nn.Module):
         tgt_x2 = target_boxes[:, 0] + tgt_w / 2
         tgt_y2 = target_boxes[:, 1] + tgt_h / 2
         
-        # --- Intersection ---
+        # Intersection
         inter_x1 = torch.max(pred_x1, tgt_x1)
         inter_y1 = torch.max(pred_y1, tgt_y1)
         inter_x2 = torch.min(pred_x2, tgt_x2)
@@ -56,11 +55,11 @@ class IoULoss(nn.Module):
         inter_h = (inter_y2 - inter_y1).clamp(min=0)
         inter_area = inter_w * inter_h
         
-        # --- Areas ---
+        # Areas 
         pred_area = (pred_x2 - pred_x1).clamp(min=0) * (pred_y2 - pred_y1).clamp(min=0)
         tgt_area  = (tgt_x2 - tgt_x1).clamp(min=0) * (tgt_y2 - tgt_y1).clamp(min=0)
         
-        # --- IoU ---
+        #IoU 
         union = pred_area + tgt_area - inter_area + self.eps
         iou = inter_area / union
         

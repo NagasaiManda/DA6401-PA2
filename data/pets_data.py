@@ -6,7 +6,6 @@ from torch.utils.data import Dataset
 from PIL import Image
 import xml.etree.ElementTree as ET
 
-# New imports for V2 transforms
 from torchvision.transforms import v2
 from torchvision import tv_tensors
 
@@ -25,7 +24,7 @@ class OxfordIIITPetLazyDataset(Dataset):
 
         self.samples = self._load_split_samples()
 
-        # Define the augmentation pipeline
+        # Augmentation pipeline
         if self.mode == "train":
            self.transform = v2.Compose([
             v2.ToImage(),
@@ -38,7 +37,7 @@ class OxfordIIITPetLazyDataset(Dataset):
         ])
 
         else:
-            # For Val/Test: Just resize and normalize
+            # For Val/Test, Just resize and normalize
             self.transform = v2.Compose([
                 v2.ToImage(),
                 v2.Resize(self.image_size, antialias=True),
@@ -47,22 +46,26 @@ class OxfordIIITPetLazyDataset(Dataset):
                  std=[0.229, 0.224, 0.225]),
             ])
 
+    # Check if mask exists
     def _mask_path(self, image_id: str):
         p1 = os.path.join(self.masks_dir, f"{image_id}.png")
         p2 = os.path.join(self.masks_dir, f"._{image_id}.png")
         return p1 if os.path.exists(p1) else p2
 
+    # helper to get path mappings
     def _split_file_path(self):
         split_files = {"train": "trainval.txt", "val": "trainval.txt", "test": "test.txt"}
         return os.path.join(self.annotations_dir, split_files[self.mode])
 
+
+    # Splitting train and val
     def _partition_trainval_samples(self, samples, val_ratio=0.2):
-        # Seed shuffle for reproducibility if needed, or use random.shuffle
         random.seed(42) 
         random.shuffle(samples)
         split = int(len(samples) * (1 - val_ratio))
         return samples[:split], samples[split:]
 
+    # Loading samples
     def _load_split_samples(self):
         samples = []
         with open(self._split_file_path(), "r") as f:
@@ -81,6 +84,7 @@ class OxfordIIITPetLazyDataset(Dataset):
             return train if self.mode == "train" else val
         return samples
 
+    # Loading bbox coords 
     def _load_bbox(self, xml_path, orig_w, orig_h):
         if not os.path.exists(xml_path):
             return [0.0, 0.0, float(orig_w), float(orig_h)]
@@ -97,6 +101,7 @@ class OxfordIIITPetLazyDataset(Dataset):
 
     def __len__(self):
         return len(self.samples)
+
 
     def __getitem__(self, idx):
         sample = self.samples[idx]
@@ -128,12 +133,13 @@ class OxfordIIITPetLazyDataset(Dataset):
         cy = (ymin + ymax) / 2.0
         w  = xmax - xmin
         h  = ymax - ymin
-    
+
+        # Convert "XYXY" fromat to "CxCyWH" format    
         bbox_cxcywh = torch.stack([cx, cy, w, h]).to(torch.float32)
     
         return {
             "image": img_tv,
             "mask": mask_tv,
             "label": label,
-            "bbox": bbox_cxcywh,  # ✅ now (cx, cy, w, h)
+            "bbox": bbox_cxcywh, 
         }
