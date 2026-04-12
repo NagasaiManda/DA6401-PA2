@@ -171,6 +171,6 @@ def run_inference(root_dir):
     print("="*50)
 
 if __name__ == "__main__":
-    # hange dataset dir here
+    # change dataset dir here
     DATASET_DIR = "/kaggle/input/datasets/nagasaimanda/oxford-pets/dataset"
     run_inference(root_dir=DATASET_DIR)
